@@ -1,0 +1,38 @@
+[
+  {
+    "lag": 0,
+    "n": 2652,
+    "spearman_r": null,
+    "spearman_p": null,
+    "pearson_r": null,
+    "pearson_p": null,
+    "r_squared": null
+  },
+  {
+    "lag": 1,
+    "n": 2635,
+    "spearman_r": null,
+    "spearman_p": null,
+    "pearson_r": null,
+    "pearson_p": null,
+    "r_squared": null
+  },
+  {
+    "lag": 2,
+    "n": 2618,
+    "spearman_r": null,
+    "spearman_p": null,
+    "pearson_r": null,
+    "pearson_p": null,
+    "r_squared": null
+  },
+  {
+    "lag": 3,
+    "n": 2601,
+    "spearman_r": null,
+    "spearman_p": null,
+    "pearson_r": null,
+    "pearson_p": null,
+    "r_squared": null
+  }
+]

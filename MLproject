@@ -1,0 +1,28 @@
+name: suitability_correlation_analysis
+
+entry_points:
+  train:
+    parameters:
+      train_data: path
+      model: str
+      model_config:
+        type: path
+        default: configs/lao_malaria.json
+      missing_strategy:
+        type: str
+        default: drop
+    command: "python train.py {train_data} {model} {model_config} {missing_strategy}"
+  predict:
+    parameters:
+      historic_data: path
+      future_data: path
+      model: str
+      out_file: path
+    command: "python predict.py {model} {historic_data} {future_data} {out_file}"
+
+required_covariates:
+  - rainfall
+  - mean_temperature
+  - humidity
+
+allow_free_additional_continuous_covariates: true

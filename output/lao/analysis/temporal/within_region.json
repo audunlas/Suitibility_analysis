@@ -1,0 +1,132 @@
+{
+  "window": 12,
+  "per_location": {
+    "LA-AT": {
+      "n_windows": 153,
+      "mean_months_suitable": 0.5490196078431373,
+      "mean_total_cases": 0.7422363174252209,
+      "spearman_r": -0.3322848511306793,
+      "spearman_p": 2.7131572301065772e-05
+    },
+    "LA-BK": {
+      "n_windows": 153,
+      "mean_months_suitable": 1.1176470588235294,
+      "mean_total_cases": 0.9148106311847782,
+      "spearman_r": -0.030054158133745585,
+      "spearman_p": 0.7122886647269746
+    },
+    "LA-BL": {
+      "n_windows": 153,
+      "mean_months_suitable": 0.1568627450980392,
+      "mean_total_cases": 1.2843794313303487,
+      "spearman_r": -0.06795644448378176,
+      "spearman_p": 0.4039165915051749
+    },
+    "LA-CH": {
+      "n_windows": 153,
+      "mean_months_suitable": 0.7581699346405228,
+      "mean_total_cases": 1.7812263140573743,
+      "spearman_r": -0.07205678714564723,
+      "spearman_p": 0.3760837161475851
+    },
+    "LA-HO": {
+      "n_windows": 153,
+      "mean_months_suitable": 0.5490196078431373,
+      "mean_total_cases": 0.03294003866395739,
+      "spearman_r": -0.2322656918564242,
+      "spearman_p": 0.0038643921247543144
+    },
+    "LA-KH": {
+      "n_windows": 153,
+      "mean_months_suitable": 0.39215686274509803,
+      "mean_total_cases": 1.358982080331864,
+      "spearman_r": 0.3016624537771942,
+      "spearman_p": 0.00015099730837898393
+    },
+    "LA-LM": {
+      "n_windows": 153,
+      "mean_months_suitable": 1.2810457516339868,
+      "mean_total_cases": 0.06118270813219793,
+      "spearman_r": 0.07688644716807294,
+      "spearman_p": 0.34484637677188884
+    },
+    "LA-LP": {
+      "n_windows": 153,
+      "mean_months_suitable": 0.9934640522875817,
+      "mean_total_cases": 1.4167134553364849,
+      "spearman_r": 0.068903887314615,
+      "spearman_p": 0.39737929988694914
+    },
+    "LA-OU": {
+      "n_windows": 153,
+      "mean_months_suitable": 1.0196078431372548,
+      "mean_total_cases": 0.1300596103196974,
+      "spearman_r": 0.4068075824689829,
+      "spearman_p": 1.8072873695716282e-07
+    },
+    "LA-PH": {
+      "n_windows": 146,
+      "mean_months_suitable": 0.8493150684931506,
+      "mean_total_cases": 0.009012256669069936,
+      "spearman_r": 0.09120267104033737,
+      "spearman_p": 0.2735967357566376
+    },
+    "LA-SL": {
+      "n_windows": 153,
+      "mean_months_suitable": 0.8954248366013072,
+      "mean_total_cases": 0.8179642208832099,
+      "spearman_r": 0.4170502791378025,
+      "spearman_p": 8.197860827235827e-08
+    },
+    "LA-SV": {
+      "n_windows": 153,
+      "mean_months_suitable": 0.7581699346405228,
+      "mean_total_cases": 1.9549909208245284,
+      "spearman_r": 0.16275876909121703,
+      "spearman_p": 0.04441756170551328
+    },
+    "LA-VT": {
+      "n_windows": 153,
+      "mean_months_suitable": 1.1503267973856208,
+      "mean_total_cases": 2.616172023297961,
+      "spearman_r": 0.1222319492595892,
+      "spearman_p": 0.13227869456883343
+    },
+    "LA-XA": {
+      "n_windows": 153,
+      "mean_months_suitable": 0.9934640522875817,
+      "mean_total_cases": 0.7738588459917587,
+      "spearman_r": 0.09193586145979016,
+      "spearman_p": 0.258369441426709
+    },
+    "LA-XE": {
+      "n_windows": 153,
+      "mean_months_suitable": 1.0784313725490196,
+      "mean_total_cases": 0.30710252129735977,
+      "spearman_r": 0.11391482383290386,
+      "spearman_p": 0.16089687750662093
+    },
+    "LA-XI": {
+      "n_windows": 153,
+      "mean_months_suitable": 0.29411764705882354,
+      "mean_total_cases": 0.061777522413122204,
+      "spearman_r": 0.12823555283034643,
+      "spearman_p": 0.11417387366929985
+    },
+    "LA-XN": {
+      "n_windows": 101,
+      "mean_months_suitable": 0.4752475247524752,
+      "mean_total_cases": 0.11172620525109442,
+      "spearman_r": 0.2628393636491283,
+      "spearman_p": 0.00791942903026388
+    }
+  },
+  "summary": {
+    "n_locations_with_correlation": 17,
+    "mean_within_location_r": 0.08881245342821774,
+    "median_within_location_r": 0.09193586145979016,
+    "min_within_location_r": -0.3322848511306793,
+    "max_within_location_r": 0.4170502791378025,
+    "n_locations_no_variation": 0
+  }
+}

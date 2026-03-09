@@ -1,0 +1,23 @@
+{
+  "name": "Lao PDR Malaria Suitability (Uganda DHIS2 thresholds, unit-adjusted)",
+  "components": [
+    {
+      "name": "temperature",
+      "column": "mean_temperature",
+      "min_value": 20.0,
+      "max_value": 30.0
+    },
+    {
+      "name": "precipitation",
+      "column": "rainfall",
+      "min_value": 3.28,
+      "max_value": null
+    },
+    {
+      "name": "humidity",
+      "column": "mean_relative_humidity",
+      "min_value": 50.0,
+      "max_value": 80.0
+    }
+  ]
+}

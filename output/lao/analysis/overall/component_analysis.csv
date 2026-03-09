@@ -1,0 +1,4 @@
+component,n_met,n_not_met,mean_cases_met,mean_cases_not_met,point_biserial_r,point_biserial_p,mann_whitney_u,mann_whitney_p
+temperature,2139,513,0.09983118049803741,0.018808404569268453,,,,
+precipitation,1442,1210,0.127841124379751,0.0331644843827645,,,,
+humidity,1287,1365,0.03323245252766175,0.1330124082418222,,,,

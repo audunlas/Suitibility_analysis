@@ -1,0 +1,28 @@
+{
+  "full_model": {
+    "n_components": 3,
+    "spearman_r": 0.07595902994478874,
+    "spearman_p": 0.00012639616463347837,
+    "n_windows": 2542
+  },
+  "without": {
+    "temperature": {
+      "spearman_r": 0.04404524288395187,
+      "spearman_p": 0.02637335377332973,
+      "delta_r": 0.031913787060836876,
+      "n_windows": 2542
+    },
+    "precipitation": {
+      "spearman_r": 0.5312511317247303,
+      "spearman_p": 3.7739737051819275e-185,
+      "delta_r": -0.4552921017799415,
+      "n_windows": 2542
+    },
+    "humidity": {
+      "spearman_r": -0.04623481104063164,
+      "spearman_p": 0.019743955388148465,
+      "delta_r": 0.12219384098542038,
+      "n_windows": 2542
+    }
+  }
+}

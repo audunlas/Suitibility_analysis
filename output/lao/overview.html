@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Lao PDR Malaria Suitability (Uganda DHIS2 thresholds, unit-adjusted) — Plot Overview</title>
+<style>
+  body { font-family: Georgia, serif; max-width: 1400px; margin: 0 auto; padding: 24px; background: #f8f8f6; color: #222; }
+  h1 { font-size: 1.8em; border-bottom: 3px solid #444; padding-bottom: 8px; }
+  h2 { font-size: 1.3em; margin-top: 48px; padding: 8px 14px; background: #2c5f8a; color: white; border-radius: 4px; }
+  h3 { font-size: 1.05em; margin: 0 0 6px 0; color: #2c5f8a; }
+  .section-intro { background: #e8f0f7; border-left: 4px solid #2c5f8a; padding: 10px 16px; margin-bottom: 20px; font-size: 0.93em; }
+  .plot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-bottom: 12px; }
+  .plot-grid.single { grid-template-columns: 1fr; }
+  .plot-grid.triple { grid-template-columns: 1fr 1fr 1fr; }
+  .plot-card { background: white; border: 1px solid #ccc; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+  .plot-card img { width: 100%; display: block; cursor: zoom-in; }
+  .plot-info { padding: 12px 14px; }
+  .plot-info p { margin: 4px 0; font-size: 0.88em; line-height: 1.5; }
+  .tag { display: inline-block; font-size: 0.75em; font-weight: bold; padding: 1px 7px; border-radius: 3px; margin-right: 4px; margin-bottom: 4px; }
+  .tag-monthly { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
+  .tag-annual { background: #d1e7dd; color: #0a5a2e; border: 1px solid #28a745; }
+  .tag-raw { background: #f8d7da; color: #721c24; border: 1px solid #dc3545; }
+  .method { background: #f0f4ff; border-left: 3px solid #6c8ebf; padding: 5px 10px; margin-top: 6px; font-size: 0.87em; }
+  .toc { background: #f0f4ff; padding: 12px 20px; border-radius: 6px; margin-bottom: 32px; font-size: 0.9em; }
+  .toc a { color: #2c5f8a; text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .toc li { margin: 3px 0; }
+  hr { border: none; border-top: 1px solid #ddd; margin: 32px 0; }
+  #lightbox { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999; align-items:center; justify-content:center; }
+  #lightbox.active { display:flex; }
+  #lightbox img { max-width:92%; max-height:92%; border: 3px solid white; border-radius: 4px; }
+  #lightbox-close { position:absolute; top:18px; right:28px; color:white; font-size:2em; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<div id="lightbox" onclick="closeLightbox()">
+  <span id="lightbox-close">&#10005;</span>
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<h1>Lao PDR Malaria Suitability (Uganda DHIS2 thresholds, unit-adjusted) — Plot Overview</h1>
+<p style="color:#555; font-size:0.9em;">
+  <span class="tag tag-annual">12-MONTH ROLLING</span> uses rolling window aggregation &nbsp;
+  <span class="tag tag-monthly">CURRENT MONTH</span> uses raw month-by-month values &nbsp;
+  <span class="tag tag-raw">RAW CLIMATE</span> uses continuous (non-thresholded) climate values
+</p>
+
+
+<div class="toc">
+  <strong>Contents</strong>
+  <ul>
+    <li><a href="#primary">Primary Analysis (Annual)</a> — months_suitable vs. annual cases</li>
+    <li><a href="#overall">Q1 — Overall Diagnostic / Descriptive</a></li>
+    <li><a href="#temporal">Q2 — Within-Location Temporal</a></li>
+    <li><a href="#spatial">Q3 — Cross-Sectional Spatial</a></li>
+    <li><a href="#lag">Q4 — Lag Analysis</a></li>
+    <li><a href="#components">Q5 — Component Analysis</a></li>
+    <li><a href="#sensitivity">Q7 — Threshold Sensitivity</a></li>
+    <li><a href="#discrimination">Q8 — Score Discrimination</a></li>
+  </ul>
+</div>
+
+
+<!-- ===================================================================== -->
+<h2 id="primary">Primary Analysis — Annual Suitability Exposure vs. Annual Disease Burden</h2>
+<div class="section-intro">
+  <strong>Core question:</strong> Do districts/years with more fully-suitable months accumulate more annual disease burden?<br>
+  <strong>Method:</strong> For each location, a 12-month rolling window advances through the time series. Each window produces one observation: predictor = count of months where composite score == max (all thresholds met); outcome = sum of monthly incidence over the same 12 months. Spearman r pooled across all location-window pairs. This is the <em>primary</em> comparison because it avoids the seasonal co-occurrence artifact (comparing current-month score to current-month cases would find a positive association by construction, since both peak in the transmission season).
+</div>
+
+<div class="plot-grid">
+
+  <div class="plot-card">
+    <img src="plots/annual/months_suitable_vs_cases.png" alt="months_suitable_vs_cases.png" onclick="openLightbox(this)">
+    <div class="plot-info">
+      <h3>months_suitable_vs_cases.png</h3>
+      <span class="tag tag-annual">12-MONTH ROLLING</span>
+      <p><strong>X-axis:</strong> Number of months in the 12-month rolling window where all thresholds were simultaneously met (score == max). Each bar represents one integer value (0, 1, 2, …).</p><p><strong>Y-axis:</strong> Percentage of all (location, window-end) pairs that had that many suitable months.</p><p><strong>Purpose:</strong> Shows the distribution of annual suitability exposure across all location-windows — how often is the location fully suitable for 0, 1, 2, … months per year?</p>
+      
+    </div>
+  </div>
+
+  <div class="plot-card">
+    <img src="plots/annual/annual_correlation_comparison.png" alt="annual_correlation_comparison.png" onclick="openLightbox(this)">
+    <div class="plot-info">
+      <h3>annual_correlation_comparison.png</h3>
+      <span class="tag tag-annual">12-MONTH ROLLING</span><span class="tag tag-raw">RAW CLIMATE</span>
+      <p><strong>Structure:</strong> Horizontal bar chart — one bar per predictor. Blue bar = months_suitable (thresholded count, from primary analysis). Light blue bars = 12-month mean of each raw (un-thresholded) climate variable over the same rolling windows.</p><p><strong>All correlations</strong> are Spearman r vs. total annual incidence across the same (location, window) pairs.</p><p><strong>Purpose:</strong> Tests whether thresholding loses information at the annual scale. If raw climate means have higher r than months_suitable, the threshold-and-count approach discards predictive signal.</p>
+      
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="overall">Q1 — Overall Diagnostic / Descriptive</h2>
+<div class="section-intro">
+  <strong>Purpose:</strong> Descriptive and diagnostic plots showing model structure — when the model fires, how scores are distributed across locations and months, and the within-location rolling correlation profile. These are not current-month correlation tests; they reveal the model's seasonal behaviour and geographic variation in suitability exposure.
+</div>
+
+<div class="plot-grid triple">
+
+  <div class="plot-card">
+    <img src="plots/overall/threshold_frequency.png" alt="threshold_frequency.png" onclick="openLightbox(this)">
+    <div class="plot-info">
+      <h3>threshold_frequency.png</h3>
+      <span class="tag tag-monthly">CURRENT MONTH</span>
+      <p><strong>Structure:</strong> Bar chart — one bar per component threshold. Height = percentage of all province-months in which that threshold condition is met. Dashed reference line at 50%.</p><p><strong>Purpose:</strong> Shows how selective each threshold is. A threshold met in &gt;80% of months adds little discrimination; one met in &lt;20% is highly restrictive and will rarely allow the score to reach its maximum.</p>
+      
+    </div>
+  </div>
+
+  <div class="plot-card">
+    <img src="plots/overall/location_correlations.png" alt="location_correlations.png" onclick="openLightbox(this)">
+    <div class="plot-info">
+      <h3>location_correlations.png</h3>
+      <span class="tag tag-annual">12-MONTH ROLLING</span>
+      <p><strong>Structure:</strong> Bar chart — one bar per province. Height = mean number of months at max suitability per 12-month rolling window for that province.</p><p><strong>Purpose:</strong> Shows which provinces experience more vs. fewer fully-suitable months on average, giving a geographic profile of annual suitability exposure.</p>
+      
+    </div>
+  </div>
+
+  <div class="plot-card">
+    <img src="plots/overall/score_heatmap.png" alt="score_heatmap.png" onclick="openLightbox(this)">
+    <div class="plot-info">
+      <h3>score_heatmap.png</h3>
+      <span class="tag tag-monthly">CURRENT MONTH</span>
+      <p><strong>Structure:</strong> Heatmap — rows = provinces, columns = calendar months (1–12), cells = modal composite suitability score for that province-month combination. Colour: green = high score (all thresholds met), red = low score (no thresholds met). Exactly 4 discrete colour levels.</p><p><strong>Purpose:</strong> Reveals the seasonal pattern of the model — when does the model fire across provinces, and is there consistent cross-province behaviour in particular months?</p>
+      
+    </div>
+  </div>
+
+</div>
+
+<div class="plot-grid single">
+
+  <div class="plot-card">
+    <img src="plots/overall/time_series.png" alt="time_series.png" onclick="openLightbox(this)">
+    <div class="plot-info">
+      <h3>time_series.png</h3>
+      <span class="tag tag-monthly">CURRENT MONTH</span>
+      <p><strong>Structure:</strong> One panel per province. X-axis = calendar time. Bars (steelblue) = monthly incidence. Line (right axis) = composite suitability score (0 to max).</p><p><strong>Purpose:</strong> Diagnostic — shows how the model score and observed incidence co-vary within each province over time. Not a formal correlation test.</p>
+      
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="temporal">Q2 — Within-Location Temporal Analysis</h2>
+<div class="section-intro">
+  <strong>Core question:</strong> Within a given location, does year-to-year variation in annual suitability exposure predict year-to-year variation in annual disease burden?<br>
+  <strong>Method:</strong> Same 12-month rolling windows as primary analysis. Within-province Spearman r computed separately for each location. A positive r means more suitable months in a window tends to coincide with more cases in that location.
+</div>
+
+<div class="plot-grid single">
+
+  <div class="plot-card">
+    <img src="plots/temporal/within_location_temporal.png" alt="within_location_temporal.png" onclick="openLightbox(this)">
+    <div class="plot-info">
+      <h3>within_location_temporal.png</h3>
+      <span class="tag tag-annual">12-MONTH ROLLING</span>
+      <p><strong>Structure:</strong> Ranked lollipop dot plot — one dot per province, sorted by within-location Spearman r (highest to lowest). X-axis = Spearman r between rolling months_suitable and rolling total incidence within that province. Dashed vertical line at zero; dashed horizontal line at mean r across all provinces. Significance stars (* p&lt;0.05, ** p&lt;0.01) shown next to each dot.</p><p><strong>Purpose:</strong> Answers Q2: within a given province, does year-to-year variation in annual suitability exposure track year-to-year variation in annual disease burden? Each province's r indicates whether more suitable months in a window tends to coincide with more cases in that province.</p><p><strong>Method:</strong> Same 12-month rolling windows as primary analysis. Within-province Spearman r computed separately for each province across its ~145 rolling windows.</p>
+      
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="spatial">Q3 — Cross-Sectional Spatial Analysis</h2>
+<div class="section-intro">
+  <strong>Core question:</strong> Do locations that experience more fully-suitable months on average also have more annual disease burden?<br>
+  <strong>Method:</strong> One point per location — mean months_suitable per rolling window vs. mean annual incidence, averaged over the full observation period. Uses the same x-axis concept as Q2 (months_suitable) so the two questions are directly comparable: within-location (Q2) vs. between-location (Q3).
+</div>
+
+<div class="plot-grid single">
+
+  <div class="plot-card">
+    <img src="plots/spatial/score_vs_cases_by_location.png" alt="score_vs_cases_by_location.png" onclick="openLightbox(this)">
+    <div class="plot-info">
+      <h3>score_vs_cases_by_location.png</h3>
+      <span class="tag tag-annual">12-MONTH ROLLING</span>
+      <p><strong>Structure:</strong> Scatter — one point per province. X-axis = mean months at max suitability per 12-month window (averaged over all windows for that province). Y-axis = mean annual incidence (sum of monthly incidence over each window, then averaged). OLS trend line. Spearman r annotated.</p><p><strong>Purpose:</strong> Answers Q3: do provinces that experience more fully-suitable months on average also have higher annual disease burden? This is the between-province (spatial) counterpart to Q2.</p><p><strong>Method note:</strong> Uses the same x-axis concept as Q2 (months_suitable) so Q2 and Q3 are directly comparable — within-province vs. between-province variation along the same predictor.</p>
+      
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="lag">Q4 — Lag Analysis</h2>
+<div class="section-intro">
+  <strong>Core question:</strong> What lag between climate conditions and reported cases maximises the correlation?<br>
+  <strong>Method:</strong> For lag N, climate variables from month T−N are matched with disease cases from month T. Lags 0–3 months tested. Best lag = highest signed Spearman r, reflecting the directional hypothesis that more suitability predicts more cases.
+</div>
+
+<div class="plot-grid triple">
+
+  <div class="plot-card">
+    <img src="plots/lag/lag_correlation.png" alt="lag_correlation.png" onclick="openLightbox(this)">
+    <div class="plot-info">
+      <h3>lag_correlation.png</h3>
+      <span class="tag tag-monthly">CURRENT MONTH</span>
+      <p><strong>Structure:</strong> Line plot of composite score Spearman r vs. lag (0–3 months). Each point shows the correlation when climate conditions at month T−lag are compared to disease cases at month T. Values annotated at each lag.</p><p><strong>Purpose:</strong> Identifies the temporal offset that best aligns the suitability signal with observed disease burden, accounting for mosquito development time, pathogen incubation, and reporting delay.</p>
+      
+    </div>
+  </div>
+
+  <div class="plot-card">
+    <img src="plots/lag/component_lag.png" alt="component_lag.png" onclick="openLightbox(this)">
+    <div class="plot-info">
+      <h3>component_lag.png</h3>
+      <span class="tag tag-monthly">CURRENT MONTH</span>
+      <p><strong>Structure:</strong> Line plot of per-component point-biserial r vs. lag (0–3 months), plus composite Spearman r (black dashed). Each component's contribution to the lagged signal is shown separately.</p><p><strong>Purpose:</strong> Shows whether individual components have different optimal lags — e.g., temperature may peak at a different lag than precipitation.</p>
+      
+    </div>
+  </div>
+
+  <div class="plot-card">
+    <img src="plots/lag/continuous_vs_composite_lag.png" alt="continuous_vs_composite_lag.png" onclick="openLightbox(this)">
+    <div class="plot-info">
+      <h3>continuous_vs_composite_lag.png</h3>
+      <span class="tag tag-monthly">CURRENT MONTH</span><span class="tag tag-raw">RAW CLIMATE</span>
+      <p><strong>Structure:</strong> Line plot comparing composite score Spearman r (blue solid) to raw continuous climate variable Spearman r (dashed lines) across lags 0–3.</p><p><strong>Purpose:</strong> Tests whether thresholding loses information at the monthly level across all lags. If raw continuous variables consistently outperform the thresholded composite, the threshold-and-count approach discards predictive signal at every lag.</p>
+      
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="components">Q5 — Component Contribution</h2>
+<div class="section-intro">
+  <strong>Core question:</strong> What does each component contribute to the primary annual correlation?<br>
+  <strong>Method:</strong> Leave-one-out using the 12-month rolling window approach — re-runs the full primary analysis with each component removed in turn. A component is a suppressor if removing it improves the correlation.
+</div>
+
+<div class="plot-grid single">
+
+  <div class="plot-card">
+    <img src="plots/components/leave_one_out.png" alt="leave_one_out.png" onclick="openLightbox(this)">
+    <div class="plot-info">
+      <h3>leave_one_out.png</h3>
+      <span class="tag tag-annual">12-MONTH ROLLING</span>
+      <p><strong>Structure:</strong> Bar chart — full model annual Spearman r (blue) compared to the r obtained when each component is removed in turn (red bars). Uses the same 12-month rolling window primary analysis for all bars.</p><p><strong>Purpose:</strong> Identifies which components help vs. hurt the primary annual correlation. A red bar higher than the blue bar means removing that component <em>improves</em> the correlation — that component is a suppressor in this dataset.</p>
+      
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="sensitivity">Q7 — Threshold Sensitivity</h2>
+<div class="section-intro">
+  <strong>Core question:</strong> How sensitive is the primary annual correlation to the specific threshold values? Are the thresholds empirically optimal for this dataset?<br>
+  <strong>Method:</strong> For each component, min and max threshold values are swept across a grid. For each combination, the full 12-month rolling window analysis is re-run and the Spearman r recorded. Sweep ranges are derived from the actual data distribution so they are unit-correct.
+</div>
+
+<div class="plot-grid triple">
+
+  <div class="plot-card">
+    <img src="plots/sensitivity/sweep_temperature.png" alt="sweep_temperature.png" onclick="openLightbox(this)">
+    <div class="plot-info">
+      <h3>sweep_temperature.png</h3>
+      <span class="tag tag-annual">12-MONTH ROLLING</span>
+      <p><strong>Structure:</strong> 2D heatmap — rows = minimum temperature threshold, columns = maximum temperature threshold. Each cell = Spearman r of the full 12-month rolling analysis run with those thresholds. Red box = original thresholds. Sweep ranges derived from the data distribution.</p><p><strong>Purpose:</strong> Shows how sensitive the primary annual correlation is to the specific temperature threshold values, and whether the original thresholds are empirically optimal for this dataset.</p>
+      
+    </div>
+  </div>
+
+  <div class="plot-card">
+    <img src="plots/sensitivity/sweep_precipitation.png" alt="sweep_precipitation.png" onclick="openLightbox(this)">
+    <div class="plot-info">
+      <h3>sweep_precipitation.png</h3>
+      <span class="tag tag-annual">12-MONTH ROLLING</span>
+      <p><strong>Structure:</strong> 1D line plot — x-axis = minimum rainfall threshold (one-sided: no upper cap), y-axis = Spearman r. Sweep range derived from the actual data distribution so values are unit-correct regardless of mm/day vs. mm/month. Original threshold marked.</p><p><strong>Purpose:</strong> Shows how the annual correlation changes as the rainfall threshold is raised or lowered. Because precipitation is one-sided (lower bound only), a single sweep suffices.</p>
+      
+    </div>
+  </div>
+
+  <div class="plot-card">
+    <img src="plots/sensitivity/sweep_humidity.png" alt="sweep_humidity.png" onclick="openLightbox(this)">
+    <div class="plot-info">
+      <h3>sweep_humidity.png</h3>
+      <span class="tag tag-annual">12-MONTH ROLLING</span>
+      <p><strong>Structure:</strong> 2D heatmap — rows = minimum humidity threshold, columns = maximum humidity threshold. Each cell = Spearman r. Red box = original thresholds. Sweep ranges chosen to centre the original thresholds in the middle of the grid (±8 pp around each).</p><p><strong>Purpose:</strong> Shows how sensitive the annual correlation is to the humidity threshold window. Particularly important because the humidity distribution differs substantially between the dataset the thresholds were calibrated on (Uganda) and the target dataset.</p>
+      
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================================================================== -->
+<h2 id="discrimination">Q8 — Score Distribution and Discrimination</h2>
+<div class="section-intro">
+  <strong>Core question:</strong> Does the composite score discriminate between high- and low-burden observations? Is there a ceiling or floor problem?<br>
+  <strong>Method:</strong> Descriptive — counts observations at each score level, reports percentage at each level, and eta-squared effect size (between-group variance in incidence explained by score level).
+</div>
+
+<div class="plot-grid">
+
+  <div class="plot-card">
+    <img src="plots/discrimination/score_distribution.png" alt="score_distribution.png" onclick="openLightbox(this)">
+    <div class="plot-info">
+      <h3>score_distribution.png</h3>
+      <span class="tag tag-monthly">CURRENT MONTH</span>
+      <p><strong>Structure:</strong> Bar chart — one bar per composite score level (0 to max). Height = percentage of all province-months at that score. Each bar labelled with percentage and count.</p><p><strong>Purpose:</strong> Shows whether the score discriminates or whether most observations collapse into a single category. A model where most observations land in a middle score cannot usefully separate high from low risk months.</p>
+      <div class="method">Eta-squared (ratio of between-group to total variance in incidence) quantifies how much of the incidence variance is explained by score level.</div>
+    </div>
+  </div>
+
+</div>
+
+<hr>
+<p style="color:#888; font-size:0.8em; text-align:center;">Auto-generated by visualize.py — Model: Lao PDR Malaria Suitability (Uganda DHIS2 thresholds, unit-adjusted)</p>
+
+<script>
+function openLightbox(img) {
+  document.getElementById('lightbox-img').src = img.src;
+  document.getElementById('lightbox').classList.add('active');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('active');
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeLightbox();
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,29 @@
+{
+  "correlation_matrix": {
+    "temperature": {
+      "temperature": 1.0,
+      "precipitation": 0.4771192292335298,
+      "humidity": -0.34772066056380696
+    },
+    "precipitation": {
+      "temperature": 0.4771192292335298,
+      "precipitation": 1.0,
+      "humidity": -0.7797873416784598
+    },
+    "humidity": {
+      "temperature": -0.34772066056380696,
+      "precipitation": -0.7797873416784598,
+      "humidity": 1.0
+    }
+  },
+  "pct_agreement": {
+    "temperature_vs_precipitation": 0.7145550527903469,
+    "temperature_vs_humidity": 0.3536953242835596,
+    "precipitation_vs_humidity": 0.11048265460030166
+  },
+  "joint_met_frequency": {
+    "temperature_and_precipitation": 0.5324283559577677,
+    "temperature_and_humidity": 0.32277526395173456,
+    "precipitation_and_humidity": 0.06975867269984917
+  }
+}
