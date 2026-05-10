@@ -6,6 +6,13 @@ entry_points:
       train_data: path
       model: str
     command: "touch {model}"
+  predict:
+    parameters:
+      historic_data: path
+      future_data: path
+      model: str
+      out_file: path
+    command: "touch {out_file}"
   report:
     parameters:
       model: str
