@@ -5,7 +5,7 @@ entry_points:
     parameters:
       train_data: path
       model: str
-    command: "python train.py {train_data} {model} configs/chap_malaria.json"
+    command: "touch {model}"
   report:
     parameters:
       model: str
