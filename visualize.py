@@ -15,7 +15,6 @@ import matplotlib.ticker as mticker
 import numpy as np
 import pandas as pd
 
-from configs.dhis2_uganda_malaria import DHIS2_UGANDA_MALARIA
 
 BASE_ANALYSIS_DIR = "output/analysis"
 BASE_PLOT_DIR = "output/plots"
@@ -52,7 +51,7 @@ def plot_cases_by_score(df: pd.DataFrame, composite: pd.Series, plot_dir: str,
                         model=None):
     """Box plot of outcome at each composite suitability score level."""
     if model is None:
-        model = DHIS2_UGANDA_MALARIA
+        raise ValueError("model must be provided")
     fig, ax = plt.subplots(figsize=(6, 5))
 
     levels = sorted(composite.unique())
@@ -129,7 +128,7 @@ def plot_climate_vs_cases(df: pd.DataFrame, plot_dir: str,
                           model=None):
     """Scatter plots of each climate variable vs. outcome, with threshold zones."""
     if model is None:
-        model = DHIS2_UGANDA_MALARIA
+        raise ValueError("model must be provided")
 
     fig, axes = plt.subplots(1, len(model.components), figsize=(5 * len(model.components), 5))
     if len(model.components) == 1:
@@ -167,7 +166,7 @@ def plot_time_series(df: pd.DataFrame, composite: pd.Series, plot_dir: str,
                      model=None):
     """Per-location time series: outcome (bars) overlaid with suitability score (line)."""
     if model is None:
-        model = DHIS2_UGANDA_MALARIA
+        raise ValueError("model must be provided")
     locations = df["location"].unique()
     n_locs = len(locations)
     fig, axes = plt.subplots(n_locs, 1, figsize=(10, 3.5 * n_locs), sharex=True)
@@ -264,7 +263,7 @@ def plot_correlation_comparison(results: dict, plot_dir: str, outcome_label: str
 def plot_threshold_frequency(component_scores: pd.DataFrame, plot_dir: str, model=None):
     """Bar chart: percentage of province-months each threshold is met."""
     if model is None:
-        model = DHIS2_UGANDA_MALARIA
+        raise ValueError("model must be provided")
 
     names = [comp.name.capitalize() for comp in model.components]
     pcts = [component_scores[comp.name].mean() * 100 for comp in model.components]
@@ -295,7 +294,7 @@ def plot_score_heatmap(df: pd.DataFrame, composite: pd.Series, plot_dir: str, mo
     from matplotlib.colors import BoundaryNorm
 
     if model is None:
-        model = DHIS2_UGANDA_MALARIA
+        raise ValueError("model must be provided")
     df = df.copy()
     df["_score"] = composite
     df["_month"] = pd.to_datetime(df["time_period"]).dt.month
@@ -810,7 +809,7 @@ def plot_score_distribution(discrimination_results: dict, plot_dir: str,
                             outcome_label: str = "Disease Cases", model=None):
     """Bar chart of score distribution with mean outcome overlay."""
     if model is None:
-        model = DHIS2_UGANDA_MALARIA
+        raise ValueError("model must be provided")
     dist = discrimination_results.get("distribution", [])
     if not dist:
         return
@@ -1200,7 +1199,7 @@ def main(base_analysis_dir: str = BASE_ANALYSIS_DIR,
          train_data_path: str = TRAIN_DATA,
          model=None):
     if model is None:
-        model = DHIS2_UGANDA_MALARIA
+        raise ValueError("model must be provided")
 
     # Create all plot subdirectories
     plot_dirs = {}

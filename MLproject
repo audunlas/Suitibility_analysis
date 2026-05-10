@@ -6,13 +6,6 @@ entry_points:
       train_data: path
       model: str
     command: "python train.py {train_data} {model} configs/chap_malaria.json"
-  predict:
-    parameters:
-      historic_data: path
-      future_data: path
-      model: str
-      out_file: path
-    command: "python predict.py {model} {historic_data} {future_data} {out_file}"
   report:
     parameters:
       model: str
