@@ -81,6 +81,7 @@ def plot_cases_by_score(df: pd.DataFrame, composite: pd.Series, plot_dir: str,
     fig.savefig(os.path.join(plot_dir, "cases_by_score.png"), dpi=150)
     plt.close(fig)
     print("  overall/cases_by_score.png")
+    return fig
 
 
 def plot_component_comparison(df: pd.DataFrame, component_scores: pd.DataFrame, plot_dir: str,
@@ -120,6 +121,7 @@ def plot_component_comparison(df: pd.DataFrame, component_scores: pd.DataFrame, 
     fig.savefig(os.path.join(plot_dir, "component_comparison.png"), dpi=150)
     plt.close(fig)
     print("  overall/component_comparison.png")
+    return fig
 
 
 def plot_climate_vs_cases(df: pd.DataFrame, plot_dir: str,
@@ -157,6 +159,7 @@ def plot_climate_vs_cases(df: pd.DataFrame, plot_dir: str,
     fig.savefig(os.path.join(plot_dir, "climate_vs_cases.png"), dpi=150)
     plt.close(fig)
     print("  overall/climate_vs_cases.png")
+    return fig
 
 
 def plot_time_series(df: pd.DataFrame, composite: pd.Series, plot_dir: str,
@@ -200,6 +203,7 @@ def plot_time_series(df: pd.DataFrame, composite: pd.Series, plot_dir: str,
     fig.savefig(os.path.join(plot_dir, "time_series.png"), dpi=150, bbox_inches="tight")
     plt.close(fig)
     print("  overall/time_series.png")
+    return fig
 
 
 def plot_location_correlations(results: dict, plot_dir: str):
@@ -223,6 +227,7 @@ def plot_location_correlations(results: dict, plot_dir: str):
     fig.savefig(os.path.join(plot_dir, "location_correlations.png"), dpi=150)
     plt.close(fig)
     print("  overall/location_correlations.png")
+    return fig
 
 
 def plot_correlation_comparison(results: dict, plot_dir: str, outcome_label: str = "incidence"):
@@ -253,6 +258,7 @@ def plot_correlation_comparison(results: dict, plot_dir: str, outcome_label: str
     fig.savefig(os.path.join(plot_dir, "correlation_comparison.png"), dpi=150)
     plt.close(fig)
     print("  overall/correlation_comparison.png")
+    return fig
 
 
 def plot_threshold_frequency(component_scores: pd.DataFrame, plot_dir: str, model=None):
@@ -281,6 +287,7 @@ def plot_threshold_frequency(component_scores: pd.DataFrame, plot_dir: str, mode
     fig.savefig(os.path.join(plot_dir, "threshold_frequency.png"), dpi=150)
     plt.close(fig)
     print("  overall/threshold_frequency.png")
+    return fig
 
 
 def plot_score_heatmap(df: pd.DataFrame, composite: pd.Series, plot_dir: str, model=None):
@@ -323,6 +330,7 @@ def plot_score_heatmap(df: pd.DataFrame, composite: pd.Series, plot_dir: str, mo
     fig.savefig(os.path.join(plot_dir, "score_heatmap.png"), dpi=150)
     plt.close(fig)
     print("  overall/score_heatmap.png")
+    return fig
 
 
 # ===========================================================================
@@ -387,6 +395,7 @@ def plot_within_location_temporal(temporal_results: dict, annual_results: dict, 
     fig.savefig(os.path.join(plot_dir, "within_location_temporal.png"), dpi=150)
     plt.close(fig)
     print("  temporal/within_location_temporal.png")
+    return fig
 
 
 # ===========================================================================
@@ -443,6 +452,7 @@ def plot_score_vs_cases_by_location(annual_results: dict, plot_dir: str,
     fig.savefig(os.path.join(plot_dir, "score_vs_cases_by_location.png"), dpi=150)
     plt.close(fig)
     print("  spatial/score_vs_cases_by_location.png")
+    return fig
 
 
 # ===========================================================================
@@ -488,6 +498,7 @@ def plot_lag_correlation(results: dict, plot_dir: str, outcome_label: str = "inc
     fig.savefig(os.path.join(plot_dir, "lag_correlation.png"), dpi=150)
     plt.close(fig)
     print("  lag/lag_correlation.png")
+    return fig
 
 
 def plot_component_lag(results: dict, plot_dir: str):
@@ -528,6 +539,7 @@ def plot_component_lag(results: dict, plot_dir: str):
     fig.savefig(os.path.join(plot_dir, "component_lag.png"), dpi=150)
     plt.close(fig)
     print("  lag/component_lag.png")
+    return fig
 
 
 def plot_continuous_vs_composite_lag(results: dict, plot_dir: str):
@@ -563,6 +575,7 @@ def plot_continuous_vs_composite_lag(results: dict, plot_dir: str):
     fig.savefig(os.path.join(plot_dir, "continuous_vs_composite_lag.png"), dpi=150)
     plt.close(fig)
     print("  lag/continuous_vs_composite_lag.png")
+    return fig
 
 
 # ===========================================================================
@@ -618,6 +631,7 @@ def plot_binned_cases(binned_results: dict, plot_dir: str, outcome_label: str = 
     fig.savefig(os.path.join(plot_dir, "binned_cases.png"), dpi=150)
     plt.close(fig)
     print("  components/binned_cases.png")
+    return fig
 
 
 def plot_redundancy_heatmap(redundancy_results: dict, plot_dir: str):
@@ -649,6 +663,7 @@ def plot_redundancy_heatmap(redundancy_results: dict, plot_dir: str):
     fig.savefig(os.path.join(plot_dir, "redundancy_heatmap.png"), dpi=150)
     plt.close(fig)
     print("  components/redundancy_heatmap.png")
+    return fig
 
 
 def plot_leave_one_out(leave_one_out_results: dict, plot_dir: str):
@@ -677,6 +692,7 @@ def plot_leave_one_out(leave_one_out_results: dict, plot_dir: str):
     fig.savefig(os.path.join(plot_dir, "leave_one_out.png"), dpi=150)
     plt.close(fig)
     print("  components/leave_one_out.png")
+    return fig
 
 
 # ===========================================================================
@@ -685,6 +701,7 @@ def plot_leave_one_out(leave_one_out_results: dict, plot_dir: str):
 
 def plot_threshold_sweep(sensitivity_results: dict, plot_dir: str):
     """Heatmap or line plot for each component's threshold sweep."""
+    figs = []
     for comp_name, comp_data in sensitivity_results.items():
         sweeps = comp_data.get("sweeps", [])
         if not sweeps:
@@ -693,12 +710,16 @@ def plot_threshold_sweep(sensitivity_results: dict, plot_dir: str):
         min_vals = sorted(set(s["min_value"] for s in sweeps if s["min_value"] is not None))
         max_vals = sorted(set(s["max_value"] for s in sweeps if s["max_value"] is not None))
 
+        fig = None
         if len(min_vals) > 1 and len(max_vals) > 1:
-            _plot_sweep_heatmap(comp_name, comp_data, sweeps, min_vals, max_vals, plot_dir)
+            fig = _plot_sweep_heatmap(comp_name, comp_data, sweeps, min_vals, max_vals, plot_dir)
         elif len(min_vals) > 1:
-            _plot_sweep_line(comp_name, comp_data, sweeps, "min_value", min_vals, plot_dir)
+            fig = _plot_sweep_line(comp_name, comp_data, sweeps, "min_value", min_vals, plot_dir)
         elif len(max_vals) > 1:
-            _plot_sweep_line(comp_name, comp_data, sweeps, "max_value", max_vals, plot_dir)
+            fig = _plot_sweep_line(comp_name, comp_data, sweeps, "max_value", max_vals, plot_dir)
+        if fig is not None:
+            figs.append((comp_name, fig))
+    return figs
 
 
 def _plot_sweep_heatmap(comp_name, comp_data, sweeps, min_vals, max_vals, plot_dir):
@@ -742,6 +763,7 @@ def _plot_sweep_heatmap(comp_name, comp_data, sweeps, min_vals, max_vals, plot_d
     fig.savefig(os.path.join(plot_dir, f"sweep_{comp_name}.png"), dpi=150)
     plt.close(fig)
     print(f"  sensitivity/sweep_{comp_name}.png")
+    return fig
 
 
 def _plot_sweep_line(comp_name, comp_data, sweeps, vary_key, vals, plot_dir):
@@ -777,6 +799,7 @@ def _plot_sweep_line(comp_name, comp_data, sweeps, vary_key, vals, plot_dir):
     fig.savefig(os.path.join(plot_dir, f"sweep_{comp_name}.png"), dpi=150)
     plt.close(fig)
     print(f"  sensitivity/sweep_{comp_name}.png")
+    return fig
 
 
 # ===========================================================================
@@ -816,6 +839,7 @@ def plot_score_distribution(discrimination_results: dict, plot_dir: str,
     fig.savefig(os.path.join(plot_dir, "score_distribution.png"), dpi=150)
     plt.close(fig)
     print("  discrimination/score_distribution.png")
+    return fig
 
 
 def plot_location_max_score(discrimination_results: dict, plot_dir: str):
@@ -841,6 +865,7 @@ def plot_location_max_score(discrimination_results: dict, plot_dir: str):
     fig.savefig(os.path.join(plot_dir, "location_max_score.png"), dpi=150)
     plt.close(fig)
     print("  discrimination/location_max_score.png")
+    return fig
 
 
 # ===========================================================================
@@ -957,6 +982,7 @@ def plot_annual_climate_vs_cases(roll_df: pd.DataFrame, model, plot_dir: str,
     fig.savefig(os.path.join(plot_dir, "annual_climate_vs_cases.png"), dpi=150)
     plt.close(fig)
     print("  annual/annual_climate_vs_cases.png")
+    return fig
 
 
 def plot_annual_correlation_comparison(roll_df: pd.DataFrame, model, annual_results: dict,
@@ -1004,6 +1030,7 @@ def plot_annual_correlation_comparison(roll_df: pd.DataFrame, model, annual_resu
     fig.savefig(os.path.join(plot_dir, "annual_correlation_comparison.png"), dpi=150)
     plt.close(fig)
     print("  annual/annual_correlation_comparison.png")
+    return fig
 
 
 def plot_months_suitable_vs_cases(annual_results: dict, plot_dir: str,
@@ -1042,6 +1069,7 @@ def plot_months_suitable_vs_cases(annual_results: dict, plot_dir: str,
     fig.savefig(os.path.join(plot_dir, "months_suitable_vs_cases.png"), dpi=150)
     plt.close(fig)
     print("  annual/months_suitable_vs_cases.png")
+    return fig
 
 
 def plot_annual_time_series(annual_results: dict, plot_dir: str,
@@ -1086,6 +1114,82 @@ def plot_annual_time_series(annual_results: dict, plot_dir: str,
     fig.savefig(os.path.join(plot_dir, "annual_time_series.png"), dpi=150, bbox_inches="tight")
     plt.close(fig)
     print("  annual/annual_time_series.png")
+    return fig
+
+
+# ===========================================================================
+# PDF generation
+# ===========================================================================
+
+def generate_pdf(all_results: dict, model, df, out_file: str):
+    """Generate a multi-page PDF from pre-computed analysis results.
+
+    Args:
+        all_results: Dict returned by analysis.pipeline.run_all_analyses().
+        model: SuitabilityModel used for the analysis.
+        df: The (cleaned) training DataFrame.
+        out_file: Destination path for the PDF.
+    """
+    import tempfile
+    from matplotlib.backends.backend_pdf import PdfPages
+
+    results = all_results.get("results", {})
+    annual_results = all_results.get("annual_results")
+    temporal_results = all_results.get("temporal_results")
+    leave_one_out_results = all_results.get("leave_one_out_results")
+    sensitivity_results = all_results.get("sensitivity_results")
+    discrimination_results = all_results.get("discrimination_results")
+
+    outcome_col = results.get("outcome_metric", "disease_cases")
+    outcome_label = "Incidence (per 1k)" if outcome_col == "incidence" else "Disease Cases"
+
+    composite = model.compute_composite_score(df)
+    component_scores = model.compute_component_scores(df)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        with PdfPages(out_file) as pdf:
+
+            def _add(fig):
+                if fig is not None:
+                    pdf.savefig(fig, bbox_inches="tight")
+
+            if annual_results and "window_data" in annual_results and annual_results["window_data"]:
+                _add(plot_months_suitable_vs_cases(annual_results, tmpdir, outcome_label))
+                roll_df = _compute_rolling_climate_means(
+                    df, model, window=annual_results.get("window", 12),
+                    cases_col=outcome_col, location_col="location", time_col="time_period",
+                )
+                if len(roll_df) >= 3:
+                    _add(plot_annual_correlation_comparison(roll_df, model, annual_results, tmpdir))
+
+            if results:
+                _add(plot_threshold_frequency(component_scores, tmpdir, model))
+                _add(plot_time_series(df, composite, tmpdir, outcome_col, outcome_label, model))
+                _add(plot_location_correlations(results, tmpdir))
+                _add(plot_score_heatmap(df, composite, tmpdir, model))
+
+            if temporal_results and annual_results:
+                _add(plot_within_location_temporal(temporal_results, annual_results, tmpdir, outcome_label))
+
+            if annual_results:
+                _add(plot_score_vs_cases_by_location(annual_results, tmpdir, outcome_label))
+
+            if results and results.get("lag_analysis"):
+                _add(plot_lag_correlation(results, tmpdir, outcome_label))
+                _add(plot_component_lag(results, tmpdir))
+                _add(plot_continuous_vs_composite_lag(results, tmpdir))
+
+            if leave_one_out_results:
+                _add(plot_leave_one_out(leave_one_out_results, tmpdir))
+
+            if sensitivity_results:
+                for _comp_name, fig in (plot_threshold_sweep(sensitivity_results, tmpdir) or []):
+                    _add(fig)
+
+            if discrimination_results:
+                _add(plot_score_distribution(discrimination_results, tmpdir, outcome_label, model))
+
+    print(f"PDF report written to {out_file}")
 
 
 # ===========================================================================
@@ -1193,7 +1297,7 @@ def main(base_analysis_dir: str = BASE_ANALYSIS_DIR,
             plot_annual_correlation_comparison(roll_df, model, annual_results, plot_dirs["annual"])
 
     # --- Generate overview HTML ---
-    html_dir = os.path.dirname(base_plot_dir)
+    html_dir = os.path.dirname(base_plot_dir) or "."
     generate_overview_html(html_dir, model_name=model.name if hasattr(model, "name") else "Suitability Model")
     print("  overview.html")
 

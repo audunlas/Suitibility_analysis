@@ -5,13 +5,7 @@ entry_points:
     parameters:
       train_data: path
       model: str
-      model_config:
-        type: path
-        default: configs/lao_malaria.json
-      missing_strategy:
-        type: str
-        default: drop
-    command: "python train.py {train_data} {model} {model_config} {missing_strategy}"
+    command: "python train.py {train_data} {model} configs/chap_malaria.json"
   predict:
     parameters:
       historic_data: path
@@ -19,6 +13,12 @@ entry_points:
       model: str
       out_file: path
     command: "python predict.py {model} {historic_data} {future_data} {out_file}"
+  report:
+    parameters:
+      model: str
+      historic_data: path
+      out_file: path
+    command: "python report.py {model} {historic_data} {out_file}"
 
 required_covariates:
   - rainfall

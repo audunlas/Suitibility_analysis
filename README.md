@@ -14,8 +14,9 @@ suitability/
     thresholds.py     — ThresholdComponent: single binary criterion (min/max bounds)
 
 configs/
-    lao_malaria.py    — Lao PDR model (Uganda thresholds, unit-adjusted)
-    lao_malaria.json  — Same config as JSON, used by the CHAP entry point
+    lao_malaria.py        — Lao PDR model (Uganda thresholds, unit-adjusted), local column names
+    lao_malaria.json      — Same config as JSON, for direct/isolated runs (uses mean_relative_humidity)
+    chap_malaria.json     — Same thresholds, CHAP-compatible column names (uses humidity)
     dhis2_uganda_malaria.py — Original Uganda model for reference
 
 analysis/
@@ -32,7 +33,9 @@ analysis/
 
 train.py              — CHAP train entry point: runs all analyses + visualization
 predict.py            — CHAP predict stub: outputs placeholder predictions
-visualize.py          — Generates all plots and overview.html
+report.py             — CHAP report entry point: generates a PDF from any dataset
+visualize.py          — Generates all plots, overview.html, and PDF reports
+analysis/pipeline.py  — Shared load/clean and analysis logic used by train.py and report.py
 isolated_run_lao.py   — Run the Lao analysis directly without CHAP
 ```
 
@@ -54,27 +57,43 @@ Runs the full pipeline on `data/chap_LAO_admin1_monthly.csv` and writes all outp
 
 ## CHAP integration
 
-This model follows the `MLproject` convention used by CHAP external models. CHAP (Climate Health Analytics Platform) provides direct integration with DHIS2 — meaning you can point this analysis at any DHIS2 instance and run it on real programme data without manual data extraction. CHAP fetches the required climate covariates automatically based on the `required_covariates` in `MLproject`.
+This model is fully CHAP-compatible. CHAP (Climate Health Analytics Platform) provides direct integration with DHIS2 — meaning you can point this analysis at any DHIS2 instance and run it on real programme data without manual data extraction. CHAP fetches the required climate covariates (`rainfall`, `mean_temperature`, `humidity`) automatically based on `required_covariates` in `MLproject`.
 
 One note: this analysis requires **relative humidity**, which is not always included in CHAP's default covariate set. Verify availability before running on a new dataset.
 
-CHAP uses two entry points defined in `MLproject`:
+Three entry points are defined in `MLproject`:
 
-**`train`** — runs the full retrospective correlation analysis and generates all plots and the HTML report into CHAP's run directory.
+**`train`** — runs the full retrospective correlation analysis and generates all plots and the HTML report.
 
-**`predict`** — this is not a forecasting model, so `predict.py` outputs a placeholder CSV to satisfy the CHAP interface. The real output is from `train`.
+**`predict`** — this is not a forecasting model, so `predict.py` outputs a placeholder CSV to satisfy the CHAP interface. The real output is from `train` and `report`.
 
-The model configuration is passed as a JSON file path, so it can be swapped without touching the code:
+**`report`** — trains the model on the supplied data and produces a self-contained multi-page PDF summarising all analyses. This is the primary output for sharing results.
+
+### Generating a PDF report
+
+```bash
+chap report \
+  /path/to/suitability_analysis \
+  your_data.csv \
+  report.pdf
+```
+
+Where `your_data.csv` must have columns: `time_period`, `location`, `disease_cases`, `rainfall`, `mean_temperature`, `humidity`.
+
+### Backtesting
 
 ```bash
 chap eval \
   --model-name /path/to/suitability_analysis \
   --dataset-csv your_data.csv \
-  --output-file results.nc \
-  --model_config configs/your_country.json
+  --output-file results.nc
 ```
 
-To adapt to a new dataset, create a JSON config following the format in `configs/lao_malaria.json` with column names matching your data. `min_value` or `max_value` can be `null` for one-sided thresholds.
+Note: evaluation metrics from `chap eval` are not meaningful for this model since `predict.py` is a stub. Use `chap report` to assess model behaviour.
+
+### Adapting to a new country
+
+Create a JSON config following the format in `configs/chap_malaria.json` with thresholds appropriate for your setting. Column names must match CHAP's standardized names (`humidity`, `rainfall`, `mean_temperature`). Pass it via `--model-configuration-yaml` or set it as the default in `MLproject`.
 
 ---
 

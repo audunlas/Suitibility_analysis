@@ -63,12 +63,19 @@ class CorrelationAnalysis:
 
         for comp_name in component_scores.columns:
             binary = component_scores[comp_name]
-            met = cases[binary == 1]
-            not_met = cases[binary == 0]
+
+            # Drop NaN outcome rows before all stats. NaN propagates through scipy
+            # and silently returns nan, which _safe_float converts to None.
+            valid = cases.notna()
+            binary_v = binary[valid]
+            cases_v = cases[valid]
+            met = cases_v[binary_v == 1]
+            not_met = cases_v[binary_v == 0]
 
             comp_result = {
-                "n_met": int(binary.sum()),
-                "n_not_met": int((binary == 0).sum()),
+                "n_met": int(binary_v.sum()),
+                "n_not_met": int((binary_v == 0).sum()),
+                "n_outcome_missing": int((~valid).sum()),
             }
 
             # Group statistics
@@ -79,7 +86,7 @@ class CorrelationAnalysis:
 
             # Point-biserial correlation
             if len(met) > 0 and len(not_met) > 0:
-                r, p = stats.pointbiserialr(binary, cases)
+                r, p = stats.pointbiserialr(binary_v, cases_v)
                 comp_result["point_biserial_r"] = _safe_float(r)
                 comp_result["point_biserial_p"] = _safe_float(p)
 
@@ -105,12 +112,15 @@ class CorrelationAnalysis:
     ) -> dict:
         """Per score level: group stats. Kruskal-Wallis across levels."""
         cases = df[cases_col]
-        levels = sorted(composite.unique())
+        valid = cases.notna()
+        composite_v = composite[valid]
+        cases_v = cases[valid]
+        levels = sorted(composite_v.unique())
         level_stats = {}
 
         groups = []
         for level in levels:
-            group = cases[composite == level]
+            group = cases_v[composite_v == level]
             groups.append(group)
             level_stats[int(level)] = {
                 "n": len(group),
@@ -131,8 +141,8 @@ class CorrelationAnalysis:
         # Pairwise Mann-Whitney between adjacent levels
         pairwise = []
         for i in range(len(levels) - 1):
-            g1 = cases[composite == levels[i]]
-            g2 = cases[composite == levels[i + 1]]
+            g1 = cases_v[composite_v == levels[i]]
+            g2 = cases_v[composite_v == levels[i + 1]]
             if len(g1) > 0 and len(g2) > 0:
                 u_stat, u_p = stats.mannwhitneyu(g1, g2, alternative="two-sided")
                 pairwise.append({
@@ -150,15 +160,19 @@ class CorrelationAnalysis:
         """Spearman, Pearson, and R² between score and cases."""
         result = {}
 
-        if len(scores) < 3:
+        valid = cases.notna()
+        scores_v = scores[valid]
+        cases_v = cases[valid]
+
+        if len(scores_v) < 3:
             result["note"] = "Too few observations for correlation"
             return result
 
-        spearman_r, spearman_p = stats.spearmanr(scores, cases)
+        spearman_r, spearman_p = stats.spearmanr(scores_v, cases_v)
         result["spearman_r"] = _safe_float(spearman_r)
         result["spearman_p"] = _safe_float(spearman_p)
 
-        pearson_r, pearson_p = stats.pearsonr(scores, cases)
+        pearson_r, pearson_p = stats.pearsonr(scores_v, cases_v)
         result["pearson_r"] = _safe_float(pearson_r)
         result["pearson_p"] = _safe_float(pearson_p)
         result["r_squared"] = _safe_float(pearson_r**2)
@@ -169,19 +183,21 @@ class CorrelationAnalysis:
         """Correlation between raw climate variables and cases."""
         results = {}
         cases = df[cases_col]
+        valid = cases.notna()
 
         for component in self.model.components:
             col = component.column
             if col not in df.columns:
                 continue
 
-            values = df[col]
+            values = df[col][valid]
+            cases_v = cases[valid]
             if len(values) < 3:
                 results[col] = {"note": "Too few observations"}
                 continue
 
-            spearman_r, spearman_p = stats.spearmanr(values, cases)
-            pearson_r, pearson_p = stats.pearsonr(values, cases)
+            spearman_r, spearman_p = stats.spearmanr(values, cases_v)
+            pearson_r, pearson_p = stats.pearsonr(values, cases_v)
 
             results[col] = {
                 "spearman_r": _safe_float(spearman_r),
