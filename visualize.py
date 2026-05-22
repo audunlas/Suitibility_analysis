@@ -20,11 +20,16 @@ BASE_ANALYSIS_DIR = "output/analysis"
 BASE_PLOT_DIR = "output/plots"
 TRAIN_DATA = "input/trainData.csv"
 
+MAX_LOCS_SUBPLOTS = 20  # cap on per-location subplot stacks; beyond this figures become unreadable
+
 
 def _fmt_p(p: float) -> str:
     """Format a p-value: scientific notation when very small, 3 d.p. otherwise."""
     if p is None:
         return "n/a"
+    p = float(p)
+    if not (0.0 <= p <= 1.0):
+        return f"invalid({p:.3g})"
     if p < 0.001:
         return f"{p:.2e}"
     return f"{p:.3f}"
@@ -165,15 +170,24 @@ def plot_time_series(df: pd.DataFrame, composite: pd.Series, plot_dir: str,
                      outcome_col: str = "disease_cases", outcome_label: str = "Disease Cases",
                      model=None):
     """Per-location time series: outcome (bars) overlaid with suitability score (line)."""
+    import random
     if model is None:
         raise ValueError("model must be provided")
-    locations = df["location"].unique()
+    all_locations = sorted(df["location"].unique())
+    n_total = len(all_locations)
+    n_sample = 10
+    if n_total > n_sample:
+        random.seed(42)
+        locations = sorted(random.sample(all_locations, n_sample))
+        print(f"  [plot_time_series] Showing {n_sample} random of {n_total} locations")
+    else:
+        locations = all_locations
     n_locs = len(locations)
     fig, axes = plt.subplots(n_locs, 1, figsize=(10, 3.5 * n_locs), sharex=True)
     if n_locs == 1:
         axes = [axes]
 
-    for ax, loc in zip(axes, sorted(locations)):
+    for ax, loc in zip(axes, locations):
         mask = df["location"] == loc
         loc_df = df.loc[mask].copy()
         loc_df["time"] = pd.to_datetime(loc_df["time_period"])
@@ -206,21 +220,29 @@ def plot_time_series(df: pd.DataFrame, composite: pd.Series, plot_dir: str,
 
 
 def plot_location_correlations(results: dict, plot_dir: str):
-    """Bar chart of within-location annual Spearman r per location."""
+    """Histogram of mean annual suitability exposure across all locations."""
     by_loc = results.get("by_location", {})
     if not by_loc:
         return
 
-    locations = sorted(by_loc.keys())
-    rs = [by_loc[loc].get("spearman_r") for loc in locations]
-    ps = [by_loc[loc].get("spearman_p") for loc in locations]
-    mean_months = [by_loc[loc].get("mean_months_suitable") for loc in locations]
+    mean_months = [v.get("mean_months_suitable") or 0 for v in by_loc.values()]
+    n_locs = len(mean_months)
+    window = max(v.get("mean_months_suitable") or 0 for v in by_loc.values())
+    max_possible = 12  # standard window
 
-    fig, ax1 = plt.subplots(figsize=(7, 4))
-    colors = ["#337ab7"] * len(locations)
-    ax1.bar(locations, [m or 0 for m in mean_months], color=colors, alpha=0.8)
-    ax1.set_ylabel("Mean Months at Max Suitability (per 12-month window)")
-    ax1.set_title("Mean Annual Suitability Exposure by Province")
+    fig, ax = plt.subplots(figsize=(7, 4))
+    bins = np.arange(-0.5, max_possible + 1.5, 1)
+    ax.hist(mean_months, bins=bins, color="#337ab7", alpha=0.8, edgecolor="white", linewidth=0.5)
+
+    mean_val = np.mean(mean_months)
+    ax.axvline(mean_val, color="gray", linewidth=1.5, linestyle="--",
+               label=f"Mean = {mean_val:.1f} months")
+
+    ax.set_xlabel("Mean Months at Max Suitability per Year")
+    ax.set_ylabel("Number of Provinces")
+    ax.set_title(f"Mean Annual Suitability Exposure (N={n_locs} provinces)")
+    ax.legend(fontsize=9)
+    ax.set_xticks(range(max_possible + 1))
 
     fig.tight_layout()
     fig.savefig(os.path.join(plot_dir, "location_correlations.png"), dpi=150)
@@ -308,21 +330,26 @@ def plot_score_heatmap(df: pd.DataFrame, composite: pd.Series, plot_dir: str, mo
     bounds = np.arange(-0.5, n_levels, 1)
     norm = BoundaryNorm(bounds, cmap.N)
 
-    fig, ax = plt.subplots(figsize=(10, 3))
+    n_rows = pivot.shape[0]
+    row_height = max(0.25, min(0.5, 6.0 / max(n_rows, 1)))
+    fig_height = max(3, n_rows * row_height)
+    fig, ax = plt.subplots(figsize=(10, fig_height))
     im = ax.imshow(pivot.values, aspect="auto", cmap=cmap, norm=norm)
 
     ax.set_xticks(range(pivot.shape[1]))
     ax.set_xticklabels(pivot.columns, fontsize=9)
-    ax.set_yticks(range(pivot.shape[0]))
-    ax.set_yticklabels(pivot.index)
+    ax.set_yticks(range(n_rows))
+    ytick_fs = max(5, min(9, int(180 / max(n_rows, 20))))
+    ax.set_yticklabels(pivot.index, fontsize=ytick_fs)
     ax.set_xlabel("Month")
     ax.set_title("Suitability Score by Location and Month (modal score)")
 
-    for i in range(pivot.shape[0]):
-        for j in range(pivot.shape[1]):
-            val = pivot.values[i, j]
-            ax.text(j, i, f"{int(val)}", ha="center", va="center", fontsize=10,
-                    color="white" if val < 1 else "black")
+    if n_rows <= 30:
+        for i in range(n_rows):
+            for j in range(pivot.shape[1]):
+                val = pivot.values[i, j]
+                ax.text(j, i, f"{int(val)}", ha="center", va="center", fontsize=10,
+                        color="white" if val < 1 else "black")
 
     fig.colorbar(im, ax=ax, label="Score", shrink=0.8, ticks=range(n_levels))
     fig.tight_layout()
@@ -363,32 +390,60 @@ def plot_within_location_temporal(temporal_results: dict, annual_results: dict, 
     rs   = [r[1] for r in rows]
     ps   = [r[2] for r in rows]
 
-    fig, ax = plt.subplots(figsize=(6, max(4, len(locs) * 0.35)))
-
-    colors = ["#d9534f" if r < 0 else "#337ab7" for r in rs]
-    ax.scatter(rs, range(len(locs)), color=colors, s=80, zorder=4)
-    ax.hlines(range(len(locs)), 0, rs, color=colors, linewidth=1.2, alpha=0.5)
-    ax.axvline(0, color="black", linewidth=0.8)
-
-    # Significance markers
-    for i, (r, p) in enumerate(zip(rs, ps)):
-        if p is not None:
-            sig = "***" if p < 0.001 else "**" if p < 0.01 else "*" if p < 0.05 else ""
-            if sig:
-                x_off = r + 0.015 if r >= 0 else r - 0.015
-                ha = "left" if r >= 0 else "right"
-                ax.text(x_off, i, sig, va="center", ha=ha, fontsize=9, color="black")
-
     mean_r = temporal_results.get("summary", {}).get("mean_within_location_r")
-    if mean_r is not None:
-        ax.axvline(mean_r, color="gray", linewidth=1.2, linestyle="--",
-                   label=f"Mean r = {mean_r:.3f}")
-        ax.legend(fontsize=9, loc="lower right")
 
-    ax.set_yticks(range(len(locs)))
-    ax.set_yticklabels(locs, fontsize=9)
-    ax.set_xlabel("Within-Province Spearman r (months_suitable vs. annual cases)")
-    ax.set_title("Q2: Within-Province Temporal Correlation\n(* p<0.05  ** p<0.01  *** p<0.001)")
+    if len(locs) > 30:
+        # Histogram view — individual rows become illegible above ~30 locations
+        fig, ax = plt.subplots(figsize=(7, 5))
+        bins = np.linspace(-1, 1, 21)
+        neg_rs = [r for r in rs if r < 0]
+        pos_rs = [r for r in rs if r >= 0]
+        ax.hist(neg_rs, bins=bins, color="#d9534f", alpha=0.8, label="Negative r")
+        ax.hist(pos_rs, bins=bins, color="#337ab7", alpha=0.8, label="Positive r")
+        ax.axvline(0, color="black", linewidth=0.8)
+
+        if mean_r is not None:
+            ax.axvline(mean_r, color="gray", linewidth=1.5, linestyle="--",
+                       label=f"Mean r = {mean_r:.3f}")
+
+        pct_pos = 100.0 * sum(1 for r in rs if r > 0) / len(rs)
+        n_sig = sum(1 for r, p in zip(rs, ps) if p is not None and p < 0.05)
+        pct_sig = 100.0 * n_sig / len(rs)
+        ax.text(0.98, 0.98,
+                f"N = {len(rs)}\n{pct_pos:.0f}% positive\n{pct_sig:.0f}% significant (p<0.05)",
+                transform=ax.transAxes, ha="right", va="top", fontsize=9,
+                bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.8))
+
+        ax.set_xlabel("Within-Province Spearman r (months_suitable vs. annual cases)")
+        ax.set_ylabel("Number of Provinces")
+        ax.set_title("Q2: Distribution of Within-Province Temporal Correlations")
+        ax.legend(fontsize=9)
+    else:
+        # Ranked dot plot for small number of locations
+        fig, ax = plt.subplots(figsize=(6, max(4, len(locs) * 0.35)))
+
+        colors = ["#d9534f" if r < 0 else "#337ab7" for r in rs]
+        ax.scatter(rs, range(len(locs)), color=colors, s=80, zorder=4)
+        ax.hlines(range(len(locs)), 0, rs, color=colors, linewidth=1.2, alpha=0.5)
+        ax.axvline(0, color="black", linewidth=0.8)
+
+        for i, (r, p) in enumerate(zip(rs, ps)):
+            if p is not None:
+                sig = "***" if p < 0.001 else "**" if p < 0.01 else "*" if p < 0.05 else ""
+                if sig:
+                    x_off = r + 0.015 if r >= 0 else r - 0.015
+                    ha = "left" if r >= 0 else "right"
+                    ax.text(x_off, i, sig, va="center", ha=ha, fontsize=9, color="black")
+
+        if mean_r is not None:
+            ax.axvline(mean_r, color="gray", linewidth=1.2, linestyle="--",
+                       label=f"Mean r = {mean_r:.3f}")
+            ax.legend(fontsize=9, loc="lower right")
+
+        ax.set_yticks(range(len(locs)))
+        ax.set_yticklabels(locs, fontsize=9)
+        ax.set_xlabel("Within-Province Spearman r (months_suitable vs. annual cases)")
+        ax.set_title("Q2: Within-Province Temporal Correlation\n(* p<0.05  ** p<0.01  *** p<0.001)")
 
     fig.tight_layout()
     fig.savefig(os.path.join(plot_dir, "within_location_temporal.png"), dpi=150)
@@ -430,8 +485,17 @@ def plot_score_vs_cases_by_location(annual_results: dict, plot_dir: str,
     fig, ax = plt.subplots(figsize=(7, 5))
 
     ax.scatter(xs, ys, s=100, color="#337ab7", edgecolors="black", linewidth=0.8, zorder=3)
-    for loc, x, y in zip(locs, xs, ys):
-        ax.annotate(loc, xy=(x, y), xytext=(8, 4), textcoords="offset points", fontsize=9)
+    if len(locs) <= 25:
+        for loc, x, y in zip(locs, xs, ys):
+            ax.annotate(loc, xy=(x, y), xytext=(8, 4), textcoords="offset points", fontsize=9)
+    else:
+        # Label only the 3 most extreme on each axis to avoid overlap
+        sorted_by_x = sorted(zip(xs, ys, locs), key=lambda t: t[0])
+        extreme = {t[2] for t in sorted_by_x[:3]} | {t[2] for t in sorted_by_x[-3:]}
+        for loc, x, y in zip(locs, xs, ys):
+            if loc in extreme:
+                ax.annotate(loc, xy=(x, y), xytext=(8, 4),
+                            textcoords="offset points", fontsize=8)
 
     if len(xs) >= 3:
         slope, intercept, _, _, _ = sp_stats.linregress(xs, ys)
@@ -500,47 +564,6 @@ def plot_lag_correlation(results: dict, plot_dir: str, outcome_label: str = "inc
     return fig
 
 
-def plot_component_lag(results: dict, plot_dir: str):
-    """Line plot of point-biserial r per component across lags."""
-    lag_data = results.get("lag_analysis", {})
-    comp_by_lag = lag_data.get("component_by_lag", {})
-    if not comp_by_lag:
-        return
-
-    fig, ax = plt.subplots(figsize=(6, 4.5))
-
-    colors = ["#d9534f", "#337ab7", "#5cb85c", "#f0ad4e"]
-    for i, (comp_name, rows) in enumerate(comp_by_lag.items()):
-        lags = [r["lag"] for r in rows]
-        rs = [r.get("point_biserial_r") for r in rows]
-        color = colors[i % len(colors)]
-        ax.plot(lags, rs, "o-", color=color, linewidth=2, markersize=7, label=comp_name.capitalize())
-
-        for lag, r in zip(lags, rs):
-            if r is not None:
-                ax.annotate(f"{r:.3f}", xy=(lag, r), xytext=(0, 10),
-                            textcoords="offset points", ha="center", fontsize=8, color=color)
-
-    summary = lag_data.get("summary", [])
-    if summary:
-        lags = [row["lag"] for row in summary]
-        rs = [row.get("spearman_r") for row in summary]
-        ax.plot(lags, rs, "D--", color="black", linewidth=1.5, markersize=6,
-                alpha=0.6, label="Composite (Spearman)")
-
-    ax.set_xlabel("Lag (months)")
-    ax.set_ylabel("Correlation with incidence")
-    ax.set_title("Component Correlations by Lag")
-    ax.set_xticks(lags)
-    ax.legend(fontsize=9)
-
-    fig.tight_layout()
-    fig.savefig(os.path.join(plot_dir, "component_lag.png"), dpi=150)
-    plt.close(fig)
-    print("  lag/component_lag.png")
-    return fig
-
-
 def plot_continuous_vs_composite_lag(results: dict, plot_dir: str):
     """Compare raw variable correlations with composite score across lags."""
     lag_data = results.get("lag_analysis", {})
@@ -559,7 +582,8 @@ def plot_continuous_vs_composite_lag(results: dict, plot_dir: str):
     lighter_colors = ["#5bc0de", "#f0ad4e", "#d9534f"]
     for i, (col, rows) in enumerate(cont_by_lag.items()):
         col_lags = [r["lag"] for r in rows]
-        col_rs = [r.get("spearman_r") for r in rows]
+        col_rs = [r.get("spearman_r") if r.get("spearman_r") is not None else np.nan
+                  for r in rows]
         label = col.replace("_", " ")
         color = lighter_colors[i % len(lighter_colors)]
         ax.plot(col_lags, col_rs, "o--", color=color, linewidth=1.5, markersize=6, label=label)
@@ -871,167 +895,6 @@ def plot_location_max_score(discrimination_results: dict, plot_dir: str):
 # Annual plots — output/plots/annual/
 # ===========================================================================
 
-def _compute_rolling_climate_means(
-    df: pd.DataFrame,
-    model,
-    window: int = 12,
-    cases_col: str = "disease_cases",
-    location_col: str = "location",
-    time_col: str = "time_period",
-) -> pd.DataFrame:
-    """Compute rolling window means for each climate column.
-
-    Mirrors compute_window_data() from analysis/annual.py but computes the
-    mean of each climate column over each window instead of threshold counts.
-
-    Returns DataFrame with columns: location, time_period, total_cases,
-    and {col}_mean for each component column. Empty if no complete windows.
-    """
-    climate_cols = [comp.column for comp in model.components]
-
-    df = df.copy()
-    df["_dt"] = pd.to_datetime(df[time_col])
-    df = df.sort_values([location_col, "_dt"])
-
-    rows = []
-    for location, group in df.groupby(location_col):
-        group = group.sort_values("_dt")
-        rolling_cases = group[cases_col].rolling(window=window, min_periods=window).sum()
-        rolling_means = {
-            col: group[col].rolling(window=window, min_periods=window).mean()
-            for col in climate_cols
-        }
-        for idx in rolling_cases.index:
-            total = rolling_cases.loc[idx]
-            means_ok = all(pd.notna(rolling_means[col].loc[idx]) for col in climate_cols)
-            if pd.notna(total) and means_ok:
-                row = {
-                    "location": str(location),
-                    "time_period": str(group.loc[idx, time_col]),
-                    "total_cases": float(total),
-                }
-                for col in climate_cols:
-                    row[f"{col}_mean"] = float(rolling_means[col].loc[idx])
-                rows.append(row)
-
-    if rows:
-        return pd.DataFrame(rows)
-    cols = ["location", "time_period", "total_cases"] + [f"{col}_mean" for col in climate_cols]
-    return pd.DataFrame(columns=cols)
-
-
-def plot_annual_climate_vs_cases(roll_df: pd.DataFrame, model, plot_dir: str,
-                                  outcome_label: str = "Disease Cases"):
-    """3-panel scatter: 12-month mean climate value vs. total annual incidence.
-
-    Each point is a (location, window) pair. Complements the primary scatter
-    which uses thresholded months_suitable — this shows the un-thresholded
-    continuous climate signal at annual scale.
-    """
-    from scipy import stats as sp_stats
-
-    n_comps = len(model.components)
-    if len(roll_df) < 3:
-        return
-
-    fig, axes = plt.subplots(1, n_comps, figsize=(5 * n_comps, 5))
-    if n_comps == 1:
-        axes = [axes]
-
-    locations = sorted(roll_df["location"].unique())
-    loc_colors = plt.cm.Set2(np.linspace(0, 1, max(len(locations), 3)))
-    loc_color_map = {loc: loc_colors[i] for i, loc in enumerate(locations)}
-
-    for ax, comp in zip(axes, model.components):
-        mean_col = f"{comp.column}_mean"
-        if mean_col not in roll_df.columns:
-            continue
-
-        x = roll_df[mean_col]
-        y = roll_df["total_cases"]
-
-        for loc in locations:
-            mask = roll_df["location"] == loc
-            ax.scatter(x[mask], y[mask], color=loc_color_map[loc], alpha=0.5,
-                       s=25, edgecolors="none", zorder=3)
-
-        # Green shaded threshold zone
-        xlim = ax.get_xlim()
-        lo = comp.min_value if comp.min_value is not None else xlim[0]
-        hi = comp.max_value if comp.max_value is not None else xlim[1]
-        ax.axvspan(lo, hi, alpha=0.12, color="green", label="Threshold range")
-        if comp.min_value is not None:
-            ax.axvline(comp.min_value, color="green", linestyle="--", linewidth=1, alpha=0.7)
-        if comp.max_value is not None:
-            ax.axvline(comp.max_value, color="green", linestyle="--", linewidth=1, alpha=0.7)
-
-        valid = x.notna() & y.notna()
-        if valid.sum() >= 3:
-            r, p = sp_stats.spearmanr(x[valid], y[valid])
-            ax.text(0.02, 0.98, f"Spearman r = {r:.3f}\np = {_fmt_p(p)}",
-                    transform=ax.transAxes, ha="left", va="top", fontsize=9,
-                    bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.8))
-
-        ax.set_xlabel(f"12-Month Mean {comp.column.replace('_', ' ').title()}")
-        ax.set_ylabel(f"Total Annual {outcome_label}")
-        ax.set_title(f"{comp.name.capitalize()}: Annual Mean vs. Annual Burden")
-        ax.legend(fontsize=8)
-
-    fig.tight_layout()
-    fig.savefig(os.path.join(plot_dir, "annual_climate_vs_cases.png"), dpi=150)
-    plt.close(fig)
-    print("  annual/annual_climate_vs_cases.png")
-    return fig
-
-
-def plot_annual_correlation_comparison(roll_df: pd.DataFrame, model, annual_results: dict,
-                                        plot_dir: str):
-    """Bar chart: annual Spearman r for months_suitable vs. each 12-month mean climate column.
-
-    Directly tests whether thresholding loses information at the annual scale —
-    same question as the monthly correlation comparison but for the primary analysis level.
-    """
-    from scipy import stats as sp_stats
-
-    months_r = annual_results.get("correlation", {}).get("spearman_r", None)
-
-    names = ["months_suitable"]
-    rs = [months_r if months_r is not None else 0]
-    colors = ["#337ab7"]
-
-    y = roll_df["total_cases"]
-    for comp in model.components:
-        mean_col = f"{comp.column}_mean"
-        if mean_col not in roll_df.columns:
-            continue
-        x = roll_df[mean_col]
-        valid = x.notna() & y.notna()
-        if valid.sum() >= 3:
-            r, _ = sp_stats.spearmanr(x[valid], y[valid])
-        else:
-            r = 0.0
-        names.append(comp.column.replace("_", "\n") + "\n(12m mean)")
-        rs.append(float(r))
-        colors.append("#5bc0de")
-
-    fig, ax = plt.subplots(figsize=(5, 4))
-    ax.barh(names, rs, color=colors, alpha=0.8, height=0.5)
-    ax.set_xlabel("Annual Spearman r (vs. total annual cases)")
-    ax.set_title("Annual Correlation: Thresholded vs. Continuous\n(12-month rolling windows)")
-    ax.axvline(0, color="black", linewidth=0.5)
-
-    for i, r in enumerate(rs):
-        x_off = r + 0.005 if r >= 0 else r - 0.005
-        ha = "left" if r >= 0 else "right"
-        ax.text(x_off, i, f"{r:.3f}", va="center", fontsize=9, ha=ha)
-
-    fig.tight_layout()
-    fig.savefig(os.path.join(plot_dir, "annual_correlation_comparison.png"), dpi=150)
-    plt.close(fig)
-    print("  annual/annual_correlation_comparison.png")
-    return fig
-
-
 def plot_months_suitable_vs_cases(annual_results: dict, plot_dir: str,
                                    outcome_label: str = "Disease Cases"):
     """Bar chart: how many (location, window) pairs had each count of suitable months.
@@ -1068,51 +931,6 @@ def plot_months_suitable_vs_cases(annual_results: dict, plot_dir: str,
     fig.savefig(os.path.join(plot_dir, "months_suitable_vs_cases.png"), dpi=150)
     plt.close(fig)
     print("  annual/months_suitable_vs_cases.png")
-    return fig
-
-
-def plot_annual_time_series(annual_results: dict, plot_dir: str,
-                             outcome_label: str = "Disease Cases"):
-    """Time series: months suitable per window and total annual cases, per location."""
-    window_data = annual_results.get("window_data", [])
-    if not window_data:
-        return
-
-    window = annual_results.get("window", 12)
-    win_df = pd.DataFrame(window_data)
-    win_df["_dt"] = pd.to_datetime(win_df["time_period"])
-    locations = sorted(win_df["location"].unique())
-    n_locs = len(locations)
-
-    fig, axes = plt.subplots(n_locs, 1, figsize=(10, 3.5 * n_locs), sharex=True)
-    if n_locs == 1:
-        axes = [axes]
-
-    for ax, loc in zip(axes, locations):
-        loc_df = win_df[win_df["location"] == loc].sort_values("_dt")
-
-        ax.bar(range(len(loc_df)), loc_df["total_cases"], color="#337ab7", alpha=0.6,
-               label=f"Total cases ({window}-month sum)")
-        ax.set_ylabel(f"Total {outcome_label}", color="#337ab7")
-
-        ax2 = ax.twinx()
-        ax2.plot(range(len(loc_df)), loc_df["months_suitable"], "o-",
-                 color="#d9534f", linewidth=2, markersize=4, label="Months suitable")
-        ax2.set_ylabel("Months at Max Suitability", color="#d9534f")
-        ax2.set_ylim(-0.5, window + 0.5)
-
-        ax.set_title(loc)
-        ax.set_xticks(range(len(loc_df)))
-        ax.set_xticklabels(loc_df["time_period"].values, rotation=45, ha="right", fontsize=8)
-
-    fig.suptitle(
-        f"Months at Max Suitability vs. Total Cases (rolling {window}-month window)",
-        fontsize=13, y=1.01
-    )
-    fig.tight_layout()
-    fig.savefig(os.path.join(plot_dir, "annual_time_series.png"), dpi=150, bbox_inches="tight")
-    plt.close(fig)
-    print("  annual/annual_time_series.png")
     return fig
 
 
@@ -1154,12 +972,6 @@ def generate_pdf(all_results: dict, model, df, out_file: str):
 
             if annual_results and "window_data" in annual_results and annual_results["window_data"]:
                 _add(plot_months_suitable_vs_cases(annual_results, tmpdir, outcome_label))
-                roll_df = _compute_rolling_climate_means(
-                    df, model, window=annual_results.get("window", 12),
-                    cases_col=outcome_col, location_col="location", time_col="time_period",
-                )
-                if len(roll_df) >= 3:
-                    _add(plot_annual_correlation_comparison(roll_df, model, annual_results, tmpdir))
 
             if results:
                 _add(plot_threshold_frequency(component_scores, tmpdir, model))
@@ -1175,7 +987,6 @@ def generate_pdf(all_results: dict, model, df, out_file: str):
 
             if results and results.get("lag_analysis"):
                 _add(plot_lag_correlation(results, tmpdir, outcome_label))
-                _add(plot_component_lag(results, tmpdir))
                 _add(plot_continuous_vs_composite_lag(results, tmpdir))
 
             if leave_one_out_results:
@@ -1262,7 +1073,6 @@ def main(base_analysis_dir: str = BASE_ANALYSIS_DIR,
     if results and results.get("lag_analysis"):
         print("\nLag (Q4):")
         plot_lag_correlation(results, plot_dirs["lag"], outcome_label)
-        plot_component_lag(results, plot_dirs["lag"])
         plot_continuous_vs_composite_lag(results, plot_dirs["lag"])
 
     # --- Q5: Component plots ---
@@ -1288,12 +1098,6 @@ def main(base_analysis_dir: str = BASE_ANALYSIS_DIR,
     if annual_results and "window_data" in annual_results and annual_results["window_data"]:
         print("\nPrimary analysis (annual):")
         plot_months_suitable_vs_cases(annual_results, plot_dirs["annual"], outcome_label)
-        roll_df = _compute_rolling_climate_means(
-            df, model, window=annual_results.get("window", 12),
-            cases_col=outcome_col, location_col="location", time_col="time_period",
-        )
-        if len(roll_df) >= 3:
-            plot_annual_correlation_comparison(roll_df, model, annual_results, plot_dirs["annual"])
 
     # --- Generate overview HTML ---
     html_dir = os.path.dirname(base_plot_dir) or "."

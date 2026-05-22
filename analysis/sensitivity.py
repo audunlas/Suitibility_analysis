@@ -114,12 +114,25 @@ def _default_sweep_config(model: SuitabilityModel, df: pd.DataFrame) -> dict:
         p = {q: col.quantile(q) for q in quantiles}
 
         if comp.name == "temperature":
-            # Min threshold: sweep from p5 to p50 (test where the lower bound should sit)
-            # Max threshold: sweep from p60 to data_max+5 — critically includes values
-            # beyond the data maximum so we can see whether the upper cap is binding at all.
-            mins = _round_series(np.linspace(p[0.05], p[0.50], 5), col)
-            maxs = _round_series(np.linspace(p[0.60], col.max() + 5, 5), col)
-            # Always include original thresholds for direct comparison
+            # NORMATIVE DECISION: Sweep centered on the original threshold values
+            # (±4°C in 2°C steps), so the original threshold always falls in the
+            # middle cell of the heatmap grid. The previous approach used data-distribution
+            # percentiles, which placed the original threshold at the edge of the sweep
+            # range (the red reference box appeared in a corner).
+            # Alternative: keep percentile approach but widen the range so the original
+            # threshold is never in the outer 20% of the grid.
+            if comp.min_value is not None and comp.max_value is not None:
+                step = 2.0
+                mins = _round_series(
+                    np.linspace(comp.min_value - 2 * step, comp.min_value + 2 * step, 5), col
+                )
+                maxs = _round_series(
+                    np.linspace(comp.max_value - 2 * step, comp.max_value + 2 * step, 5), col
+                )
+            else:
+                mins = _round_series(np.linspace(p[0.05], p[0.50], 5), col)
+                maxs = _round_series(np.linspace(p[0.60], col.max() + 5, 5), col)
+            # Always include original thresholds (already at centre when min/max are set above)
             if comp.min_value is not None:
                 mins = sorted(set(mins + [float(round(comp.min_value, 1))]))
             if comp.max_value is not None:

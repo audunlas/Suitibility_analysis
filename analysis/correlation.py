@@ -192,6 +192,12 @@ class CorrelationAnalysis:
 
             values = df[col][valid]
             cases_v = cases[valid]
+            # also exclude rows where the climate column itself is NaN; without this
+            # spearmanr silently returns NaN for the whole result even if only one
+            # row is missing — most visible at lag 0 where no inner-join pre-cleans the data
+            climate_valid = values.notna()
+            values = values[climate_valid]
+            cases_v = cases_v[climate_valid]
             if len(values) < 3:
                 results[col] = {"note": "Too few observations"}
                 continue
