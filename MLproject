@@ -1,5 +1,7 @@
 name: suitability_correlation_analysis
 
+uv_env: pyproject.toml
+
 entry_points:
   train:
     parameters:
@@ -24,5 +26,7 @@ required_covariates:
   - rainfall
   - mean_temperature
   - humidity
+
+
 
 allow_free_additional_continuous_covariates: true
